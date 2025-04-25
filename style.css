@@ -1,0 +1,53 @@
+body {
+  font-family: sans-serif;
+  display: flex;
+  margin: 0;
+}
+
+.sidebar {
+  width: 200px;
+  background: #f1f1f1;
+  padding: 10px;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ddd;
+  margin: 5px 0;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.sidebar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 8px;
+}
+
+input[type="text"] {
+  margin-top: 10px;
+  padding: 5px;
+  font-size: 14px;
+  width: 60%;
+}

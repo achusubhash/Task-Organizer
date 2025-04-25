@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Organizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Saved Schedules</h2>
+    <ul id="schedule-list"></ul>
+  </div>
+
+  <div class="main">
+    <h1 contenteditable="true" id="planner-title">Task Organizer</h1>
+
+    <label for="save-name">Save As:</label>
+    <input type="text" id="save-name" placeholder="Enter schedule name">
+
+    <table id="schedule">
+      <tr>
+        <th>Time</th>
+        <th>Activity</th>
+        <th>Done</th>
+      </tr>
+    </table>
+
+    <button onclick="addRow()">+ Add Task</button>
+    <button onclick="saveSchedule()">Save</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
