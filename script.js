@@ -1,108 +1,91 @@
-window.onload = function () {
-  loadSavedSchedules();
-};
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('add-task').addEventListener('click', addTaskTile);
 
-function addRow(time = "", activity = "", done = false) {
-  var table = document.getElementById("schedule");
-  var row = table.insertRow();
-
-  var timeCell = row.insertCell(0);
-  var activityCell = row.insertCell(1);
-  var doneCell = row.insertCell(2);
-
-  var timeInput = document.createElement("input");
-  timeInput.value = time;
-  timeCell.appendChild(timeInput);
-
-  var activityInput = document.createElement("input");
-  activityInput.value = activity;
-  activityCell.appendChild(activityInput);
-
-  var doneCheckbox = document.createElement("input");
-  doneCheckbox.type = "checkbox";
-  doneCheckbox.checked = done;
-  doneCell.appendChild(doneCheckbox);
-}
-
-function saveSchedule() {
-  var name = document.getElementById("save-name").value.trim();
-  var title = document.getElementById("planner-title").textContent;
-  var table = document.getElementById("schedule");
-
-  if (!name) {
-    alert("Please enter a name for the schedule.");
-    return;
+  // Dark mode toggle
+  const themeBtn = document.getElementById('toggle-theme');
+  const currentTheme = localStorage.getItem('theme');
+  if (currentTheme === 'dark') {
+    document.body.classList.add('dark');
   }
 
-  var schedule = {
-    title: title,
-    tasks: []
-  };
-
-  for (var i = 1; i < table.rows.length; i++) {
-    var row = table.rows[i];
-    var time = row.cells[0].querySelector("input").value;
-    var activity = row.cells[1].querySelector("input").value;
-    var done = row.cells[2].querySelector("input").checked;
-
-    schedule.tasks.push({ time, activity, done });
-  }
-
-  localStorage.setItem("schedule-" + name, JSON.stringify(schedule));
-  alert("Schedule saved!");
-  loadSavedSchedules();
-  window.location.reload(); // Clears planner after saving
-}
-
-function loadSavedSchedules() {
-  var list = document.getElementById("schedule-list");
-  list.innerHTML = "";
-
-  for (var key in localStorage) {
-    if (key.startsWith("schedule-")) {
-      let name = key.replace("schedule-", "");
-
-      var li = document.createElement("li");
-
-      var nameSpan = document.createElement("span");
-      nameSpan.textContent = name;
-      nameSpan.style.cursor = "pointer";
-      nameSpan.onclick = function () {
-        loadSchedule(this.textContent);
-      };
-
-      var deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "X";
-      deleteBtn.onclick = function (e) {
-        e.stopPropagation();
-        if (confirm("Delete schedule '" + name + "'?")) {
-          localStorage.removeItem("schedule-" + name);
-          loadSavedSchedules();
-        }
-      };
-
-      li.appendChild(nameSpan);
-      li.appendChild(deleteBtn);
-      list.appendChild(li);
-    }
-  }
-}
-
-function loadSchedule(name) {
-  var data = localStorage.getItem("schedule-" + name);
-  if (!data) return;
-
-  var parsed = JSON.parse(data);
-
-  document.getElementById("save-name").value = name;
-  document.getElementById("planner-title").textContent = parsed.title || "My Daily Planner";
-
-  var table = document.getElementById("schedule");
-  while (table.rows.length > 1) {
-    table.deleteRow(1);
-  }
-
-  parsed.tasks.forEach(task => {
-    addRow(task.time, task.activity, task.done);
+  themeBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    const newTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+    localStorage.setItem('theme', newTheme);
   });
-}
+
+  const container = document.getElementById('task-container');
+  container.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(container, e.clientY);
+    const dragging = document.querySelector('.dragging');
+    if (afterElement == null) {
+      container.appendChild(dragging);
+    } else {
+      container.insertBefore(dragging, afterElement);
+    }
+    updateTileNumbers();
+  });
+
+  function addTaskTile() {
+    const tileNumber = container.children.length + 1;
+
+    const tile = document.createElement('div');
+    tile.className = 'task-tile';
+    tile.draggable = true;
+
+    tile.innerHTML = `
+      <div class="tile-header">
+        Task #<span class="tile-number">${tileNumber}</span>
+        <button class="delete-task">✖</button>
+      </div>
+      <input type="text" placeholder="Task Title">
+      <input type="time">
+      <input type="date">
+      <textarea placeholder="Description"></textarea>
+      <label><input type="checkbox"> Done</label>
+    `;
+
+    // Delete task
+    tile.querySelector('.delete-task').addEventListener('click', () => {
+      tile.remove();
+      updateTileNumbers();
+    });
+
+    tile.addEventListener('dragstart', () => {
+      tile.classList.add('dragging');
+    });
+
+    tile.addEventListener('dragend', () => {
+      tile.classList.remove('dragging');
+      updateTileNumbers();
+    });
+
+    container.appendChild(tile);
+    updateTileNumbers();
+  }
+
+  function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.task-tile:not(.dragging)')];
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+
+  function updateTileNumbers() {
+    const tiles = document.querySelectorAll('.task-tile');
+    tiles.forEach((tile, index) => {
+      const numberSpan = tile.querySelector('.tile-number');
+      if (numberSpan) {
+        numberSpan.textContent = index + 1;
+      }
+    });
+  }
+});
+  
